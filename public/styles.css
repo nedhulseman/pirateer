@@ -1,0 +1,26 @@
+#board{
+ display: grid;
+ width: 500px;
+ float: left;
+ margin-left: 100px;
+ /*transform: rotate(45deg);*/
+}
+.cell {
+  background-color: #000080;
+  border: .5px solid white;
+}
+.btn{
+  color: white;
+  background: #d4af37;
+  font-size: 14px;
+  border: 0;
+  padding: 12px 0;
+  width: 140px;
+  border-radius: 0 0 2px 2px;
+}
+#submit {
+  float: right;
+  width: 200px;
+  justify-content: right;
+  margin-right: 100px;
+}

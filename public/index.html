@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Pirateer!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js" charset="utf-8"></script>
+
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header>
+      <h2 id="user-identifier"></h2>
+      <h4 id="grid-ref"></h4>
+    </header>
+
+
+
+
+    <div>
+      <section id='board'></section>
+      <!--
+      <div id="board">
+      </div>
+      <-->
+      <div id="submit">
+        <button type="button" class="btn" id="submit">Submit Move</button>
+      </div>
+    </div>
+
+
+    <script src="/user.js"></script>
+  </body>
+</html>
