@@ -46,6 +46,14 @@ var square = 30,
   w = 600,
   h = 600;
 
+var nodes_data = [];
+var nodes;
+var playerOrder;
+var movedPiece;
+var players;
+
+
+
 function dragged(d) {
     d3.select(this)
       .attr("cx", d3.event.x)
@@ -127,6 +135,7 @@ function dragstarted(d){
 
   //Called when the drag event occurs (object should be moved)
 function dragged(d){
+  movedPiece = d.id;
   d.x = d3.event.x;
   d.y = d3.event.y;
 
@@ -165,8 +174,7 @@ function dragged(d){
 }
 
 
-var nodes_data = [];
-var nodes;
+
 
 /*
 coords = piece.node().getBBox();
@@ -187,20 +195,25 @@ startGame.addEventListener('click', function(){
   socket.emit('start-game', players);
 });
 
-socket.on('start-game', function(serverPlayers){
+socket.on('start-game', function(players){
   //Iterate over players
-  console.log(Object.keys(serverPlayers));
-  for (var player=0; player<Object.keys(serverPlayers).length; player++){
-    var player_info = serverPlayers[Object.keys(serverPlayers)[player]];
+  /*playerOrder = serverPlayers[1];
+  orderedList = document.getElementById('team-order');
+  for (var i=0; i<Object.keys(players).length.length; i++){
+    orderedList.innerHTML += "<li>" + playerOrder[i]+"</li>";
+  }
+  */
+  for (var player=0; player<Object.keys(players).length; player++){
+    //var player_info = players[Object.keys(players)[player]];
     //Iterate over pieces for a given player
-    for (var piece=0; piece<player_info.pieces.length; piece++){
+    for (var piece=0; piece<players[Object.keys(players)[player]].pieces.length; piece++){
         svg.append("circle")
-          .attr("class", player_info.team + '-ship')
-          .attr("id", player_info.team +'-'+ piece)
-          .attr("cx", parseInt(d3.select('#'+player_info.pieces[piece]).attr('x')) + square/2)
-          .attr("cy", parseInt(d3.select('#'+player_info.pieces[piece]).attr('y')) + square/2)
+          .attr("class", players[Object.keys(players)[player]].team + '-ship')
+          .attr("id", players[Object.keys(players)[player]].team +'-'+ piece)
+          .attr("cx", parseInt(d3.select('#'+players[Object.keys(players)[player]].pieces[piece].pos).attr('x')) + square/2)
+          .attr("cy", parseInt(d3.select('#'+players[Object.keys(players)[player]].pieces[piece].pos).attr('y')) + square/2)
           .attr("r", 15)
-          .attr("fill", player_info.team)
+          .attr("fill", players[Object.keys(players)[player]].team)
           .classed('draggable', true);
     }
   }
@@ -212,22 +225,29 @@ socket.on('start-game', function(serverPlayers){
     nodes_data.push(coords);
   };
   nodes = svg.selectAll("."+players[userId].team+'-ship').call(drag).data(nodes_data);
+  players[userId].coords = nodes_data;
+  console.log(players);
+  window.players = players;
 });
-
-
 
 
 var submit = document.getElementById("submit");
 submit.addEventListener('click', function(){
-  console.log("testing....")
-  socket.emit('move', nodes_data);
-});
-socket.on('move', function(pieces){
-  console.log(pieces);
-  for (var i=0; i<pieces.length; i++){
-    d3.select('#'+pieces[i].id).transition().duration(1500)
-      .attr("cx", pieces[i].x)
-      .attr("cy", pieces[i].y);
-  }
+  //players[userId]
+  console.log(players);
+  if (players[userId].turn == true){
+      players[userId].coords = nodes_data;
+      socket.emit('move', {user: userId,
+                          players: players });
+  };
 
+});
+socket.on('move', function(playerMoves){
+  players = playerMoves.players;
+  for (var i=0; i<playerMoves.players[playerMoves.user].coords.length; i++){
+    d3.select('#'+playerMoves.players[playerMoves.user].coords[i].id).transition().duration(1500)
+      .attr("cx", playerMoves.players[playerMoves.user].coords[i].x)
+      .attr("cy", playerMoves.players[playerMoves.user].coords[i].y);
+
+  }
 });

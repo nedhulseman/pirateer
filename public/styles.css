@@ -1,8 +1,9 @@
 #board{
  display: grid;
- width: 500px;
- float: left;
- margin-left: 100px;
+ width: 600px;
+ float: center;
+ display: inline-block;
+ text-align: center;
  /*transform: rotate(45deg);*/
 }
 .cell {
@@ -19,8 +20,24 @@
   border-radius: 0 0 2px 2px;
 }
 #submit {
-  float: right;
-  width: 200px;
+  width: 300px;
   justify-content: right;
-  margin-right: 100px;
+  float: right;
+  display: inline-block;
+}
+body{
+  margin-bottom: 100px;
+}
+#game-setup {
+  width: 300px;
+  justify-content: right;
+  display: inline-block;
+}
+.control-panel{
+  display: inline-block;
+}
+div {
+  display: inline-block;
+  vertical-align: top;
+  margin: 10px;
 }

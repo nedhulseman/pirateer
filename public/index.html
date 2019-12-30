@@ -14,27 +14,32 @@
 
     <header>
       <h2 id="user-identifier"></h2>
+      <h2 id="current-turn"></h2>
       <h2 id="team"></h2>
       <h4 id="grid-ref"></h4>
     </header>
 
 
 
+      <div>
+
 
       <section id='board'></section>
-      <!--
-      <div id="board">
-      </div>
-      <-->
-      <div id="submit">
-        <button type="button" class="btn" id="submit">Submit Move</button>
-        <button type="button" class="btn" id="start-game">Start Game</button>
-        <br><br>
-        <h2>Teams</h2>
-        <div id="team-assignments">
+      <div class="control-panel">
+        <div id="submit">
+          <button type="button" class="btn">Submit Move</button>
+        </div>
+        <div id="game-setup">
+          <button type="button" class="btn" id="start-game">Start Game</button>
+          <br><br>
+          <h2>Teams</h2>
+          <div id="team-assignments">
+          </div>
+          <h2>Turn Order</h2>
+          <ol id="team-order"></ol>
         </div>
       </div>
-
+    </div>
 
 
 
