@@ -47,11 +47,12 @@ var square = 30,
   h = 600;
 
 var nodes_data = [];
+var startTurnNodes_data;
 var nodes;
 var playerOrder;
 var movedPiece;
 var players;
-
+var currentTurn = document.getElementById('current-turn');
 
 
 function dragged(d) {
@@ -130,11 +131,28 @@ var drag = d3.behavior.drag()
   .on("drag", dragged);
 
 function dragstarted(d){
-  d3.event.sourceEvent.stopPropagation();
+  if (players[userId].turn == true);{
+    d3.event.sourceEvent.stopPropagation();
+    checkIfMovedPieces(d.id);
+  }
 }
 
+function checkIfMovedPieces(movedPiece){
+  for (var i=0; i<nodes_data.length; i++){
+    if (nodes_data[i].id != movedPiece){
+      console.log(nodes_data[i].x);
+      console.log(startTurnNodes_data[i].x);
+      nodes_data[i].x = startTurnNodes_data[i].x;
+      nodes_data[i].y = startTurnNodes_data[i].y;
+      d3.select('#'+nodes_data[i].id).transition().duration(100)
+        .attr("cx", nodes_data[i].x)
+        .attr("cy", nodes_data[i].y);
+    }
+  }
+}
   //Called when the drag event occurs (object should be moved)
 function dragged(d){
+
   movedPiece = d.id;
   d.x = d3.event.x;
   d.y = d3.event.y;
@@ -224,10 +242,17 @@ socket.on('start-game', function(players){
               y: d3.select('#'+players[userId].team +'-'+ p).attr('cy')}
     nodes_data.push(coords);
   };
+  startTurnNodes_data = _.cloneDeep(nodes_data);
   nodes = svg.selectAll("."+players[userId].team+'-ship').call(drag).data(nodes_data);
   players[userId].coords = nodes_data;
   console.log(players);
   window.players = players;
+  for (var p=0; p<Object.keys(players).length; p++){
+    if (players[Object.keys(players)[p]].turn == true){
+        currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
+    }
+  }
+
 });
 
 
@@ -237,6 +262,7 @@ submit.addEventListener('click', function(){
   console.log(players);
   if (players[userId].turn == true){
       players[userId].coords = nodes_data;
+      startTurnNodes_data = _.cloneDeep(nodes_data);
       socket.emit('move', {user: userId,
                           players: players });
   };
@@ -244,6 +270,11 @@ submit.addEventListener('click', function(){
 });
 socket.on('move', function(playerMoves){
   players = playerMoves.players;
+  for (var p=0; p<Object.keys(players).length; p++){
+    if (players[Object.keys(players)[p]].turn == true){
+        currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
+    }
+  }
   for (var i=0; i<playerMoves.players[playerMoves.user].coords.length; i++){
     d3.select('#'+playerMoves.players[playerMoves.user].coords[i].id).transition().duration(1500)
       .attr("cx", playerMoves.players[playerMoves.user].coords[i].x)
