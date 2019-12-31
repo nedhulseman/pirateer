@@ -26,6 +26,7 @@ var gameInProgress = false;
 var playOrder;
 var playersTurn;
 
+
 var orderTeams = function (array) {
 
 	var currentIndex = array.length;
@@ -88,6 +89,10 @@ io.on('connection', function(socket){
       console.log(player);
       io.sockets.emit('start-game', players);
     }
+  });
+
+  socket.on('dice-roll', function(die){
+    io.sockets.emit('dice-roll', die);
   });
 
   socket.on('move', function(playerMoves){
