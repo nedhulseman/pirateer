@@ -65,7 +65,7 @@ io.on('connection', function(socket){
                   pos: startingBlocks[teams[player_counter]][1]},
                  {id: teams[player_counter]+'-2',
                   pos: startingBlocks[teams[player_counter]][2]} ],
-      coords : null,
+      coords : [],
       shipClass: teams[player_counter]+'-ship',
       turn: false,
     };
@@ -83,10 +83,7 @@ io.on('connection', function(socket){
         players[playOrder[i]].playOrder = i;
       }
       gameInProgress = true;
-      console.log(players);
       player = players;
-      console.log('-----------------')
-      console.log(player);
       io.sockets.emit('start-game', players);
     }
   });
@@ -95,18 +92,24 @@ io.on('connection', function(socket){
     io.sockets.emit('dice-roll', die);
   });
 
+  socket.on('ship-captured', function(ship){
+    io.sockets.emit('ship-captured', ship);
+  });
   socket.on('move', function(playerMoves){
-    player[playerMoves.user].turn = false;
+    playerMoves.players[playerMoves.user].turn = false;
     if (playersTurn == playOrder.length - 1){
       playersTurn = 0;
     }
     else {
       playersTurn += 1;
     }
-    console.log(playerMoves);
-    player[playerMoves.user].coords = playerMoves.players[playerMoves.user].coords;
-    player[playOrder[playersTurn]].turn = true;
-    playerMoves.players = player;
-    io.sockets.emit('move', playerMoves);
+    console.log('Server playerMoves');
+    console.log(playerMoves.players);
+    //player[playerMoves.user].coords = playerMoves.players[playerMoves.user].coord;
+    playerMoves.players[playOrder[playersTurn]].turn = true;
+    //playerMoves.players = _.cloneDeep(player);
+    //console.log('Server player');
+    //console.log(player);
+    io.sockets.emit('move',playerMoves);
   });
 });

@@ -55,8 +55,8 @@ var boardMatrix = {};
 
 // Dice
 var rolled = false;
-var dice1 = 1;
-var dice2 = 1;
+var dice1 = 999;
+var dice2 = 999;
 var dice1Img = document.getElementById('dice-1');
 var dice2Img = document.getElementById('dice-2');
 var roll = document.getElementById("roll-dice");
@@ -188,6 +188,13 @@ function checkIfMovedPieces(movedPiece){
   }
 }
 function dropped(d) {
+
+  if (rolled == false){
+    dice1Img.src = 'roll-dice.png';
+    dice2Img.src = 'roll-dice.png';
+  }
+
+
   minD = Math.min(dice1, dice2);
   maxD = Math.max(dice1, dice2);
 
@@ -202,12 +209,23 @@ function dropped(d) {
 
   minM = Math.min(Math.abs(newP[1] - oldP[1]), Math.abs(newP[2] - oldP[2]));
   maxM = Math.max(Math.abs(newP[1] - oldP[1]), Math.abs(newP[2] - oldP[2]));
-  if (minD != minM && maxD != maxM){
-    nodes_data[movedP].x = startTurnNodes_data[movedP].x;
-    nodes_data[movedP].y = startTurnNodes_data[movedP].y;
-    d3.select('#'+nodes_data[movedP].id).transition().duration(100)
-      .attr("cx", nodes_data[movedP].x)
-      .attr("cy", nodes_data[movedP].y);
+  if (minM == 0){
+    if (maxM != minD + maxD && maxM != Math.abs(minD - maxD)){
+      nodes_data[movedP].x = startTurnNodes_data[movedP].x;
+      nodes_data[movedP].y = startTurnNodes_data[movedP].y;
+      d3.select('#'+nodes_data[movedP].id).transition().duration(100)
+        .attr("cx", nodes_data[movedP].x)
+        .attr("cy", nodes_data[movedP].y);
+    }
+  }
+  else{
+    if (minD != minM || maxD != maxM){
+      nodes_data[movedP].x = startTurnNodes_data[movedP].x;
+      nodes_data[movedP].y = startTurnNodes_data[movedP].y;
+      d3.select('#'+nodes_data[movedP].id).transition().duration(100)
+        .attr("cx", nodes_data[movedP].x)
+        .attr("cy", nodes_data[movedP].y);
+    }
   }
 }
   //Called when the drag event occurs (object should be moved)
@@ -329,11 +347,33 @@ submit.addEventListener('click', function(){
         players[userId].coords[i].sq = boardMatrix[players[userId].coords[i].y +'-'+ players[userId].coords[i].x]
       }
       startTurnNodes_data = _.cloneDeep(nodes_data);
+
+      // Check if any ships were captured
+      movedPieceX = d3.select('#'+movedPiece).attr('cx');
+      movedPieceY = d3.select('#'+movedPiece).attr('cy');
+      for (var p=0; p<Object.keys(players).length; p++){
+        for (var s=0; s<players[Object.keys(players)[p]].coords.length; s++){
+          plyr = players[Object.keys(players)[p]];
+          if (plyr.team != players[userId].team && plyr.coords[s].x == movedPieceX && plyr.coords[s].y == movedPieceY){
+            // Need to emit broadcast and remove svg from map
+            socket.emit('ship-captured', players[Object.keys(players)[p]].coords[s].id);
+            // Remove ship from players before broadcasting
+            players[Object.keys(players)[p]].coords.splice(s, 1);
+            console.log('Captured Coords!');
+            console.log(players[Object.keys(players)[p]].coords);
+          }
+        }
+      }
       socket.emit('move', {user: userId,
                           players: players });
   };
-
 });
+
+socket.on('ship-captured', function(ship){
+  console.log(ship);
+  d3.select('#'+ship).remove();
+});
+
 socket.on('move', function(playerMoves){
   players = playerMoves.players;
   for (var p=0; p<Object.keys(players).length; p++){
@@ -350,4 +390,6 @@ socket.on('move', function(playerMoves){
   rolled = false;
   dice1Img.classList.remove("animate");
   dice2Img.classList.remove("animate");
+  dice1 = 999;
+  dice2 = 999;
 });
