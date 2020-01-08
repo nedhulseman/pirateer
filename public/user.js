@@ -142,6 +142,19 @@ _.times(squaresColumn, function(n) {
     });
 });
 
+anchorSquares = ["s-9-10", "s-9-11","s-10-9", "s-11-9", "s-12-10", "s-12-11",
+                  "s-10-12", "s-11-12", "s-1-10", "s-20-11", "s-10-1", "s-11-20",]
+var anchors = svg.selectAll('image')
+  .data(anchorSquares).enter()
+    .append("svg:image")
+      .attr("href", "anchor.png")
+      .attr("x", function(d) {return parseInt(d3.select('#'+d).attr('x')) + 5 })
+      .attr("y", function(d) {return parseInt(d3.select('#'+d).attr('y')) + 5 })
+      .attr("width", 20)
+      .attr("height", 20)
+      .attr("z-index", -1);
+      //  function(d) {'rotate('+ Math.floor(anchorSquares.indexOf(d)*45 / 90)*-90  +' 0 0)'}
+
 // Make matrix dict to get center of each squaresRow
 for (var r=1; r<w/square +1; r++){
   for (var c=1; c<h/square +1; c++){
