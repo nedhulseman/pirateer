@@ -87,7 +87,9 @@ io.on('connection', function(socket){
       io.sockets.emit('start-game', players);
     }
   });
-
+  socket.on('treasureFoundOnIsland', function(id){
+    io.sockets.emit('treasureFoundOnIsland', id);
+  })
   socket.on('dice-roll', function(die){
     io.sockets.emit('dice-roll', die);
   });
@@ -103,8 +105,6 @@ io.on('connection', function(socket){
     else {
       playersTurn += 1;
     }
-    console.log('Server playerMoves');
-    console.log(playerMoves.players);
     //player[playerMoves.user].coords = playerMoves.players[playerMoves.user].coord;
     playerMoves.players[playOrder[playersTurn]].turn = true;
     //playerMoves.players = _.cloneDeep(player);

@@ -6,6 +6,7 @@
  text-align: center;
  /*transform: rotate(45deg);*/
 }
+
 .cell {
   background-color: #000080;
   border: .5px solid white;
@@ -19,6 +20,7 @@
   width: 140px;
   border-radius: 0 0 2px 2px;
 }
+
 #submit {
   width: 200px;
   justify-content: right;

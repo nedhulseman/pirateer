@@ -49,6 +49,7 @@ var playerOrder;
 var movedPiece;
 var players;
 var currentTurn = document.getElementById('current-turn');
+var currentTurnID;
 
 //Get square centers
 var boardMatrix = {};
@@ -60,6 +61,17 @@ var dice2 = 999;
 var dice1Img = document.getElementById('dice-1');
 var dice2Img = document.getElementById('dice-2');
 var roll = document.getElementById("roll-dice");
+var treasureOnIsland = true;
+function treasureFound(id){
+  socket.emit('treasureFoundOnIsland', id);
+}
+function getMoved_i(id){
+  for (var i=0; i<nodes_data.length; i++){
+    if (nodes_data[i].id == id){
+      return i;
+    }
+  }
+}
 roll.addEventListener('click', function(){
   if (gameStarted == true && players[userId].turn == true && rolled == false){
     rolled = true;
@@ -71,10 +83,28 @@ roll.addEventListener('click', function(){
 socket.on('dice-roll', function(die){
   d1 = die[0];
   d2 = die[1];
-  dice1Img.src = 'dice-'+d1+'.png';
-  dice2Img.src = 'dice-'+d2+'.png';
+  dice1Img.src = 'static/dice-'+d1+'.png';
+  dice2Img.src = 'static/dice-'+d2+'.png';
   dice1Img.classList.add("animate");
   dice2Img.classList.add("animate");
+
+  // Check to see if player is in the harbvour of Treasure treasureOnIsland
+  // This would be if they defered to take the treasure
+  if (treasureOnIsland == true && currentTurnID == userId){
+    for (var i=0; i<anchorSquaresTreasure.length; i++){
+      sqX = parseInt(d3.select('#'+ anchorSquaresTreasure[i]).attr('x')) + (square/2);
+      sqY = parseInt(d3.select('#'+ anchorSquaresTreasure[i]).attr('y')) + (square/2);
+      for (var p=0; p<players[userId].coords.length; p++){
+        if (players[userId].coords[p].x == sqX && players[userId].coords[p].y == sqY) {
+          if (confirm('Arrrrg! You struck treasure. \nWould you like to take this treasure?')){
+            nodes_data[movedI].hasGold = true;
+            treasureFound('#' + nodes_data[movedI].id);
+            socket.emit('treasureFoundOnIsland');
+          }
+        }
+      }
+    }
+  };
 });
 /*
 d3.select('#'+playerMoves.players[playerMoves.user].coords[i].id).transition().duration(1500)
@@ -142,12 +172,49 @@ _.times(squaresColumn, function(n) {
     });
 });
 
-anchorSquares = ["s-9-10", "s-9-11","s-10-9", "s-11-9", "s-12-10", "s-12-11",
-                  "s-10-12", "s-11-12", "s-1-10", "s-20-11", "s-10-1", "s-11-20",]
+land = ["s-1-1", "s-1-2","s-1-3", "s-1-4", "s-1-5", "s-1-6", "s-1-7", "s-1-8",
+        "s-1-9", "s-1-16", "s-1-17", "s-1-18", "s-1-19", "s-1-20",
+        "s-2-1", "s-2-2","s-2-3", "s-2-4", "s-2-5", "s-2-6", "s-2-7", "s-2-8",
+        "s-2-9", "s-2-10","s-2-11", "s-2-12", "s-2-13",
+        "s-2-16", "s-2-17", "s-2-18", "s-2-19", "s-2-20",
+        "s-3-1", "s-3-2","s-3-3", "s-3-4", "s-3-5", "s-3-6", "s-3-7", "s-3-8",
+        "s-3-10","s-3-11", "s-3-12",
+        "s-3-16", "s-3-17", "s-3-18", "s-3-19", "s-3-20",
+        "s-4-1", "s-4-2", "s-4-3", "s-4-17", "s-4-18", "s-4-19", "s-4-20",
+        "s-5-1", "s-5-2", "s-5-3", "s-5-16", "s-5-18", "s-5-19", "s-5-20",
+        "s-10-10", "s-10-11", "s-11-10", "s-11-11",
+        "s-6-1", "s-6-2", "s-6-3",
+        "s-7-1", "s-7-2", "s-7-3",
+        "s-8-1", "s-8-2", "s-8-3", "s-8-3", "s-8-19",
+        "s-9-1", "s-9-2", "s-9-18", "s-9-19",
+        "s-10-2", "s-10-3", "s-10-18", "s-10-19",
+        "s-11-2", "s-11-3", "s-11-18", "s-11-19",
+        "s-12-2", "s-12-3", "s-12-19", "s-12-20",
+        "s-13-2", "s-13-18", "s-13-19", "s-13-20",
+        "s-14-18", "s-14-19", "s-14-20",
+        "s-15-18", "s-15-19", "s-15-20",
+        "s-16-1", "s-16-2", "s-16-3", "s-16-5", "s-16-18", "s-16-19", "s-16-20",
+        "s-17-1", "s-17-2", "s-17-3", "s-17-4", "s-17-18", "s-17-19", "s-17-20",
+        "s-18-1", "s-18-2","s-18-3", "s-18-4", "s-18-5", "s-18-9", "s-18-10", "s-18-11",
+        "s-18-13","s-18-14", "s-18-15", "s-18-16","s-18-17", "s-18-18", "s-18-13","s-18-19", "s-18-20",
+        "s-19-1", "s-19-2","s-19-3", "s-19-4", "s-19-5", "s-19-8",
+        "s-19-9", "s-19-10","s-19-11", "s-19-12", "s-19-13", "s-19-14", "s-19-15",
+        "s-19-16", "s-19-17", "s-19-18", "s-19-19", "s-19-20",
+        "s-20-1", "s-20-2","s-20-3", "s-20-4", "s-20-5",
+        "s-20-14", "s-20-13", "s-20-14", "s-20-15",
+        "s-20-16", "s-20-17", "s-20-18", "s-20-19", "s-20-20",
+ ]
+for (var i=0; i<land.length; i++){
+  d3.select("#"+land[i]).style("fill", "#c2b280");
+};
+//d3.select('rect').data(land).enter().style("fill", "#c2b280");
+anchorSquaresTreasure = ["s-9-10", "s-9-11","s-10-9", "s-11-9", "s-12-10", "s-12-11",
+                        "s-10-12", "s-11-12"];
+anchorSquaresLanding  = ["s-1-10", "s-20-11", "s-10-1", "s-11-20"];
 var anchors = svg.selectAll('image')
-  .data(anchorSquares).enter()
+  .data(anchorSquaresTreasure.concat(anchorSquaresLanding)).enter()
     .append("svg:image")
-      .attr("href", "anchor.png")
+      .attr("href", "static/anchor.png")
       .attr("x", function(d) {return parseInt(d3.select('#'+d).attr('x')) + 5 })
       .attr("y", function(d) {return parseInt(d3.select('#'+d).attr('y')) + 5 })
       .attr("width", 20)
@@ -203,8 +270,8 @@ function checkIfMovedPieces(movedPiece){
 function dropped(d) {
 
   if (rolled == false){
-    dice1Img.src = 'roll-dice.png';
-    dice2Img.src = 'roll-dice.png';
+    dice1Img.src = 'static/roll-dice.png';
+    dice2Img.src = 'static/roll-dice.png';
   }
 
 
@@ -327,12 +394,19 @@ socket.on('start-game', function(players){
           .classed('draggable', true);
     }
   }
+  svg.append("circle")
+    .attr("id", "treasureOnIsland")
+    .attr("cx", w/2)
+    .attr("cy", h/2)
+    .attr("r", 15)
+    .attr("fill", '#d4af37')
   //Instantate nodes_data upon connection
   for (var p=0; p<players[userId].pieces.length; p++){
     coords = {id: players[userId].team +'-'+ p,
               x: d3.select('#'+players[userId].team +'-'+ p).attr('cx'),
               y: d3.select('#'+players[userId].team +'-'+ p).attr('cy'),
-              sq: boardMatrix[d3.select('#'+players[userId].team +'-'+ p).attr('cy') +'-'+d3.select('#'+players[userId].team +'-'+ p).attr('cx')]
+              sq: boardMatrix[d3.select('#'+players[userId].team +'-'+ p).attr('cy') +'-'+d3.select('#'+players[userId].team +'-'+ p).attr('cx')],
+              hasGold: false
             }
     nodes_data.push(coords);
   };
@@ -344,6 +418,7 @@ socket.on('start-game', function(players){
   for (var p=0; p<Object.keys(players).length; p++){
     if (players[Object.keys(players)[p]].turn == true){
         currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
+        currentTurnID = Object.keys(players)[p];
     }
   }
 
@@ -353,7 +428,6 @@ socket.on('start-game', function(players){
 var submit = document.getElementById("submit");
 submit.addEventListener('click', function(){
   //players[userId]
-  console.log(players);
   if (players[userId].turn == true && rolled == true){
       players[userId].coords = nodes_data;
       for (var i=0; i<players[userId].coords.length; i++ ){
@@ -362,6 +436,7 @@ submit.addEventListener('click', function(){
       startTurnNodes_data = _.cloneDeep(nodes_data);
 
       // Check if any ships were captured
+      movedI = getMoved_i(movedPiece);
       movedPieceX = d3.select('#'+movedPiece).attr('cx');
       movedPieceY = d3.select('#'+movedPiece).attr('cy');
       for (var p=0; p<Object.keys(players).length; p++){
@@ -370,13 +445,32 @@ submit.addEventListener('click', function(){
           if (plyr.team != players[userId].team && plyr.coords[s].x == movedPieceX && plyr.coords[s].y == movedPieceY){
             // Need to emit broadcast and remove svg from map
             socket.emit('ship-captured', players[Object.keys(players)[p]].coords[s].id);
+            //Check if captured ship has gold
+            if (players[Object.keys(players)[p]].coords[s].hasGold == true){
+              players[userId].coords[movedI].hasGold = true;
+              treasureFound('#' + nodes_data[movedI].id);
+            };
+
             // Remove ship from players before broadcasting
             players[Object.keys(players)[p]].coords.splice(s, 1);
+
             console.log('Captured Coords!');
             console.log(players[Object.keys(players)[p]].coords);
           }
         }
       }
+      if (treasureOnIsland == true){
+        for (var i=0; i<anchorSquaresTreasure.length; i++){
+          sqX = parseInt(d3.select('#'+ anchorSquaresTreasure[i]).attr('x')) + (square/2);
+          sqY = parseInt(d3.select('#'+ anchorSquaresTreasure[i]).attr('y')) + (square/2);
+          if (movedPieceX == sqX && movedPieceY == sqY) {
+            if (confirm('Arrrrg! You struck treasure. \nWould you like to take this treasure?')){
+              nodes_data[movedI].hasGold = true;
+              treasureFound('#' + nodes_data[movedI].id);
+            }
+          }
+        }
+      };
       socket.emit('move', {user: userId,
                           players: players });
   };
@@ -386,20 +480,33 @@ socket.on('ship-captured', function(ship){
   console.log(ship);
   d3.select('#'+ship).remove();
 });
+socket.on('treasureFoundOnIsland', function(id){
+  if (treasureOnIsland == true){
+   d3.select('#treasureOnIsland').transition().duration(6000)
+        .attr("cx", d3.select(id).attr("cx"))
+        .attr("cy", d3.select(id).attr("cy"));
+   d3.select('#treasureOnIsland').remove();
+  }
+  d3.select(id).style("fill", '#d4af37');
+  treasureOnIsland = false;
+})
 
 socket.on('move', function(playerMoves){
   players = playerMoves.players;
   for (var p=0; p<Object.keys(players).length; p++){
     if (players[Object.keys(players)[p]].turn == true){
         currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
+        currentTurnID = Object.keys(players)[p];
     }
   }
   for (var i=0; i<playerMoves.players[playerMoves.user].coords.length; i++){
     d3.select('#'+playerMoves.players[playerMoves.user].coords[i].id).transition().duration(1500)
       .attr("cx", playerMoves.players[playerMoves.user].coords[i].x)
       .attr("cy", playerMoves.players[playerMoves.user].coords[i].y);
-
   }
+
+
+
   rolled = false;
   dice1Img.classList.remove("animate");
   dice2Img.classList.remove("animate");
