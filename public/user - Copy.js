@@ -22,11 +22,6 @@ socket.on('player-join', function(ps){
   for (var p=0; p<Object.keys(ps).length; p++){
     teamHTML += "<p>" + Object.keys(ps)[p] +": "+ps[Object.keys(ps)[p]].team+"</p>";
   }
-  readyUp = document.getElementById('players-ready');
-  name = '<td>'+userId+'</td>';
-  readyUpToggle = '<td><input type="checkbox" checked data-toggle="toggle" data-on="Ready" data-off="Not Ready" data-onstyle="success" data-offstyle="danger"></td>';
-  row = '<tr>'+name+readyUpToggle+'</tr>';
-  readyUp.innerHTML += row;
 });
 
 
@@ -61,8 +56,6 @@ var boardMatrix = {};
 
 // Dice
 var rolled = false;
-var global_legal_moves = {};
-var highlighted_legal_moves;
 var dice1 = 999;
 var dice2 = 999;
 var dice1Img = document.getElementById('dice-1');
@@ -80,53 +73,13 @@ function getMoved_i(id){
     }
   }
 }
-
-function setGlobalLegalMoves(){
-  global_legal_moves = {};
-  var d1;
-  var d2;
-  var y;
-  var x;
-  var totalMoved=0;
-  // Calculate total moves made to determine how many moves are left
-  for (var p=0; p<startTurnNodes_data.length; p++){
-      if (startTurnNodes_data[p].y != nodes_data[p].y || startTurnNodes_data[p].x != nodes_data[p].x){
-        oldP = boardMatrix[startTurnNodes_data[p].y +'-'+ startTurnNodes_data[p].x];
-        newP =  boardMatrix[nodes_data[p].y +'-'+ nodes_data[p].x];
-        movedY = Math.abs( parseInt(newP.split('-')[1]) - parseInt(oldP.split('-')[1]));
-        movedX = Math.abs( parseInt(newP.split('-')[2]) - parseInt(oldP.split('-')[2]));
-        totalMoved += movedX + movedY;
-      }
-  };
-  if (totalMoved == dice1 + dice2){
-    d1 = 0;
-    d2 = 0;
-  }
-  else if (totalMoved == 0){
-    d1 = dice1;
-    d2 = dice2;
-  }
-  else {
-    d1 = dice1 + dice2 - totalMoved;
-    d2 = 0;
-  }
-  for (var p=0; p<startTurnNodes_data.length; p++){
-    //if (startTurnNodes_data[p].y == nodes_data[p].y && startTurnNodes_data[p].x == nodes_data[p].x){
-    y = nodes_data[p].y;
-    x = nodes_data[p].x;
-    //}
-    global_legal_moves[startTurnNodes_data[p].id] = getLegalMoves(boardMatrix[y+'-'+ x], d1, d2);
-  }
-};
-
 roll.addEventListener('click', function(){
   if (gameStarted == true && players[userId].turn == true && rolled == false){
     rolled = true;
     dice1 = Math.floor(Math.random() * 6) +1;
     dice2 = Math.floor(Math.random() * 6) +1;
-    //dice1 = 1;
-    //dice2= 2;
-    setGlobalLegalMoves();
+    dice1 = 1;
+    dice2= 2;
     socket.emit('dice-roll', [dice1, dice2]);
   }
 });
@@ -288,7 +241,7 @@ function checkLand(currentRow, newRow, currentCol, newCol){
   for (var r=0; r<Math.abs(newRow - currentRow)+1; r++){
     currentSq = "s-"+ (Math.min(newRow, currentRow)+r) + "-" + currentCol;
     if ( (land.indexOf( currentSq ) > -1 )
-        || (Math.abs(newRow-currentRow) != r && piecesOtherTeams.indexOf(currentSq) > -1 )
+        || (Math.abs(newRow-currentRow) != Math.min(newRow, currentRow)+r && piecesOtherTeams.indexOf(currentSq) > -1 && newCol - currentCol == 0 )
         || (piecesMyTeam.indexOf(currentSq)>-1) ){
         hitLandByRow = true;
         break;
@@ -298,7 +251,7 @@ function checkLand(currentRow, newRow, currentCol, newCol){
     for (var c=0; c<Math.abs(newCol - currentCol)+1; c++){
       currentSq = "s-"+newRow + "-" + (Math.min(newCol, currentCol)+c);
       if ( (land.indexOf( currentSq) > -1 )
-          || (Math.abs(newCol-currentCol) != c && piecesOtherTeams.indexOf(currentSq) > -1 )
+          || (Math.abs(newCol-currentCol) != Math.min(newCol, currentCol)+c && piecesOtherTeams.indexOf(currentSq) > -1 )
           || (piecesMyTeam.indexOf(currentSq)>-1) ){
             hitLandByRow = true;
             break;
@@ -310,7 +263,7 @@ function checkLand(currentRow, newRow, currentCol, newCol){
   for (var c=0; c<Math.abs(newCol - currentCol)+1; c++){
     currentSq = "s-"+currentRow + "-" + (Math.min(newCol, currentCol)+c);
     if ( (land.indexOf(currentSq) >-1 )
-        || (Math.abs(newCol-currentCol) != c && piecesOtherTeams.indexOf(currentSq) > -1 )
+        || (Math.abs(newCol-currentCol) != Math.min(newCol, currentCol)+c && piecesOtherTeams.indexOf(currentSq) > -1 && newRow-currentRow == 0 )
         || (piecesMyTeam.indexOf(currentSq)>-1) ){
           hitLandByCol = true;
           break;
@@ -320,7 +273,7 @@ function checkLand(currentRow, newRow, currentCol, newCol){
     for (var r=0; r<Math.abs(newRow - currentRow)+1; r++){
       currentSq = "s-"+(Math.min(newRow, currentRow)+r) + "-" + newCol;
       if ( (land.indexOf(currentSq) > -1  )
-          || (Math.abs(newRow-currentRow) != r && piecesOtherTeams.indexOf(currentSq) > -1  )
+          || (Math.abs(newRow-currentRow) != Math.min(newRow, currentRow)+r && piecesOtherTeams.indexOf(currentSq) > -1  )
           || (piecesMyTeam.indexOf(currentSq)>-1) ){
             hitLandByCol = true;
             break;
@@ -460,12 +413,18 @@ function dropped(d) {
     d1 = dice1;
   }
 
-  //legalMoves = getLegalMoves(oldP, d2, d1);
-  legalMoves = global_legal_moves[startTurnNodes_data[movedP].id];
+  legalMoves = getLegalMoves(oldP, d2, d1);
+  console.log("----  Dropped ----");
+  console.log('oldP: #'+oldP);
+  console.log("New Piece: #"+newP);
+  console.log("--- Dice -----")
+  console.log('d1: '+d1);
+  console.log('d2: '+d2);
+  console.log("----------Legal Moves-----")
+  console.log(legalMoves);
 
 
-
-  if (!legalMoves.includes("#"+newP)){
+  if (!legalMoves.includes("#"+newP)  ){//}|| totalMoved + minM + maxM > totalMoved){
     nodes_data[movedP].x = startTurnNodes_data[movedP].x;
     nodes_data[movedP].y = startTurnNodes_data[movedP].y;
     d3.select('#'+nodes_data[movedP].id).transition().duration(100)
@@ -476,8 +435,28 @@ function dropped(d) {
     totalMoved += minM + maxM;
   };
 
-  setGlobalLegalMoves();
 
+  /*
+  if (minM == 0){
+    if ( (totalMoved + maxM <= minD+maxD) && (maxM != maxD || maxM != minD ) && (maxM != minD + maxD && maxM != Math.abs(minD - maxD)) ){
+      nodes_data[movedP].x = startTurnNodes_data[movedP].x;
+      nodes_data[movedP].y = startTurnNodes_data[movedP].y;
+      d3.select('#'+nodes_data[movedP].id).transition().duration(100)
+        .attr("cx", nodes_data[movedP].x)
+        .attr("cy", nodes_data[movedP].y);
+    }
+  }
+  else{
+    if (minD != minM || maxD != maxM){
+      nodes_data[movedP].x = startTurnNodes_data[movedP].x;
+      nodes_data[movedP].y = startTurnNodes_data[movedP].y;
+      d3.select('#'+nodes_data[movedP].id).transition().duration(100)
+        .attr("cx", nodes_data[movedP].x)
+        .attr("cy", nodes_data[movedP].y);
+    }
+  }
+  totalMoved += maxM;
+  */
 }
   //Called when the drag event occurs (object should be moved)
 function dragged(d){
@@ -564,7 +543,7 @@ socket.on('start-game', function(players){
           .attr("fill", players[Object.keys(players)[player]].team)
           .classed('draggable', true)
           .on("mouseover", function(){
-            if  (window.players[userId].turn == true && d3.select(this).attr("id").split("-")[0] == window.players[userId].team){
+            if  (players[userId].turn == true && d3.select(this).attr("id").split("-")[0] == players[userId].team){
               d3.select(this)
                 .attr("stroke", "#d4af37")
                 .attr("stroke-width", "3px");
@@ -579,11 +558,9 @@ socket.on('start-game', function(players){
                 d1 = dice1;
               }
 
-              thisPiece = d3.select(this).attr("id");
-              //position = boardMatrix[startTurnNodes_data[thisPiece].y+'-'+ startTurnNodes_data[thisPiece].x];
-              //legalMoves = getLegalMoves(position, d2, d1);
-              legalMoves = global_legal_moves[thisPiece];
-              highlighted_legal_moves = global_legal_moves[thisPiece];
+              thisPiece = parseInt(d3.select(this).attr("id").split("-")[1]);
+              position = boardMatrix[startTurnNodes_data[thisPiece].y+'-'+ startTurnNodes_data[thisPiece].x];
+              legalMoves = getLegalMoves(position, d2, d1);
               for (var sq=0; sq<legalMoves.length; sq++){
                 d3.select(legalMoves[sq])
                   .attr("fill", "#ADD8E6")
@@ -591,7 +568,7 @@ socket.on('start-game', function(players){
             };
           })
           .on("mouseout", function(){
-            if  (window.players[userId].turn == true){
+            if  (players[userId].turn == true){
               d3.select(this)
                 .attr("stroke", "none")
                 .attr("stroke-width", "none");
@@ -605,12 +582,11 @@ socket.on('start-game', function(players){
                 d1 = dice1;
               }
 
-              thisPiece = d3.select(this).attr("id");
-              //position = boardMatrix[startTurnNodes_data[thisPiece].y+'-'+ startTurnNodes_data[thisPiece].x];
-              //legalMoves = getLegalMoves(position, d2, d1);
-              //legalMoves = global_legal_moves[thisPiece];
-              for (var sq=0; sq<highlighted_legal_moves.length; sq++){
-                d3.select(highlighted_legal_moves[sq])
+              thisPiece = parseInt(d3.select(this).attr("id").split("-")[1]);
+              position = boardMatrix[startTurnNodes_data[thisPiece].y+'-'+ startTurnNodes_data[thisPiece].x];
+              legalMoves = getLegalMoves(position, d2, d1);
+              for (var sq=0; sq<legalMoves.length; sq++){
+                d3.select(legalMoves[sq])
                   .attr("fill", "#000080")
               }
             };
@@ -646,6 +622,7 @@ d3.select(this)
   startTurnNodes_data = _.cloneDeep(nodes_data);
   nodes = svg.selectAll("."+players[userId].team+'-ship').call(drag).data(nodes_data);
   players[userId].coords = nodes_data;
+  console.log(players);
   window.players = players;
   for (var p=0; p<Object.keys(players).length; p++){
     if (players[Object.keys(players)[p]].turn == true){
@@ -686,6 +663,8 @@ submit.addEventListener('click', function(){
             // Remove ship from players before broadcasting
             players[Object.keys(players)[p]].coords.splice(s, 1);
 
+            console.log('Captured Coords!');
+            console.log(players[Object.keys(players)[p]].coords);
           }
         }
       }
@@ -743,5 +722,4 @@ socket.on('move', function(playerMoves){
   dice1 = 999;
   dice2 = 999;
   totalMoved = 0;
-  global_legal_moves = {};
 });

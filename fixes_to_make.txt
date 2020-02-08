@@ -1,0 +1,7 @@
+To fix:
+
+1. additive or subtractive moves in same dir not working
+2. if any legal moved - must move
+X - 3. Fix capturing
+
+
