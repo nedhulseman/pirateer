@@ -1,6 +1,7 @@
 var userId;
 //make connection
 var socket = io.connect('http://localhost:4000');
+
 socket.on('connect', function() {
   userId = socket.id;
   document.getElementById('user-identifier').innerHTML = "Welcome user: " + userId;
@@ -26,7 +27,7 @@ socket.on('player-join', function(ps){
   name = '<td>'+userId+'</td>';
   readyUpToggle = '<td><input type="checkbox" checked data-toggle="toggle" data-on="Ready" data-off="Not Ready" data-onstyle="success" data-offstyle="danger"></td>';
   row = '<tr>'+name+readyUpToggle+'</tr>';
-  readyUp.innerHTML += row;
+  //readyUp.innerHTML += row;
 });
 
 

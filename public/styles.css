@@ -11,7 +11,7 @@
   background-color: #000080;
   border: .5px solid white;
 }
-.btn{
+.start-buttons{
   color: white;
   background: #d4af37;
   font-size: 14px;
@@ -39,11 +39,7 @@ body{
   display: inline-block;
   width: 500px;
 }
-div {
-  display: inline-block;
-  vertical-align: top;
-  margin: 10px;
-}
+
 
 #roll-dice {
   background: none;
@@ -55,7 +51,7 @@ div {
 #roll-dice:hover {
   font-weight: 600;
 }
-.btn:hover {
+.start-buttons:hover {
   border: 2px solid blue;
 }
 #dice {
@@ -63,6 +59,12 @@ div {
   display: inline-block;
   justify-content: center;
 
+}
+.ready-up{
+    pointer-events: none;
+    outline: none;
+    margin: 0px;
+    height: 100%;
 }
 img {
   width: 100px;
