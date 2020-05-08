@@ -20,7 +20,65 @@ socket.on('player-join', function(ps, playerId){
   players = ps;
   teamHTML = ""
   var teamLists = document.getElementById('team-assignments');
+  for (var p=0; p<Object.keys(ps).length; p++){
+    playerReady = document.getElementById('player-ready').getElementsByTagName('tbody')[0];
 
+    console.log(row);
+    console.log(d);
+    var row = document.createElement('tr');
+    var d = document.createElement('td');
+    console.log(row);
+    console.log(d);
+    var buttonDiv = document.createElement('div');
+    buttonDiv.setAttribute('class', 'toggle btn btn-danger off');
+    buttonDiv.setAttribute("data-toggle", "toggle");
+    buttonDiv.setAttribute("style", "width: 106px; height: 34px;");
+
+    var input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = true;
+    input.setAttribute('class', 'ready-up');
+    input.setAttribute("data-toggle", 'toggle');
+    input.setAttribute("data-on", 'Ready');
+    input.setAttribute("data-off", 'Not Ready');
+    input.setAttribute("data-onstyle", 'Success');
+    input.setAttribute("data-offstyle", 'danger');
+
+    var labelDiv = document.createElement('div');
+    labelDiv.setAttribute("class", "toggle-group");
+
+    var labelDivReady = document.createElement('label');
+    labelDivReady.setAttribute('class', "btn btn-success toggle-on");
+    labelDivReady.textContent ="Ready";
+
+    var labelDivNotReady = document.createElement('label');
+    labelDivNotReady.setAttribute('class', "btn btn-danger toggle-off");
+    labelDivNotReady.textContent ="Not Ready";
+
+    var buttonSpan = document.createElement('span');
+    buttonSpan.setAttribute('class', "toggle-handle btn btn-default");
+
+
+
+    labelDiv.appendChild(labelDivReady);
+    labelDiv.appendChild(labelDivNotReady);
+    labelDiv.appendChild(buttonSpan);
+    console.log(labelDiv);
+
+    buttonDiv.appendChild(input);
+    buttonDiv.appendChild(labelDiv);
+
+    console.log(buttonDiv);
+    d.appendChild(buttonDiv);
+    //var playerName = document.createElement('td');
+    //playerName.textContent = (playerId);
+
+    row.appendChild(d);
+    //row.append(Object.keys(ps)[p]);
+
+
+    //playerReady.appendChild(row);
+  }
 
 });
 
@@ -68,32 +126,6 @@ var totalMoved = 0;
 function treasureFound(id){
   socket.emit('treasureFoundOnIsland', id);
 }
-function resetGamePlayeVars(){
-  window.gameStarted = false;
-  window.nodes_data = [];
-  window.startTurnNodes_data = -1;
-  window.nodes = -1;
-  window.playerOrder = -1;
-  window.movedPiece = false;
-  window.players = -1;
-  window.currentTurn = document.getElementById('current-turn');
-  window.currentTurnID = -1;
-
-
-  // Dice
-  window.rolled = false;
-  window.global_legal_moves = {};
-  window.highlighted_legal_moves = -1;
-  window.dice1 = 999;
-  window.dice2 = 999;
-  window.dice1Img = document.getElementById('dice-1');
-  window.dice2Img = document.getElementById('dice-2');
-  window.roll = document.getElementById("roll-dice");
-  window.treasureOnIsland = true;
-  window.totalMoved = 0;
-  window.rolled=false;
-};
-
 function getMoved_i(id){
   for (var i=0; i<nodes_data.length; i++){
     if (nodes_data[i].id == id){
@@ -142,7 +174,6 @@ function setGlobalLegalMoves(){
 
 roll.addEventListener('click', function(){
   if (gameStarted == true && players[userId].turn == true && rolled == false){
-    console.log("Dice rolled locally")
     rolled = true;
     dice1 = Math.floor(Math.random() * 6) +1;
     dice2 = Math.floor(Math.random() * 6) +1;
@@ -153,7 +184,6 @@ roll.addEventListener('click', function(){
   }
 });
 socket.on('dice-roll', function(die){
-  console.log("Dice rolled everywhere");
   d1 = die[0];
   d2 = die[1];
   dice1Img.src = 'static/dice-'+d1+'.png';
@@ -575,34 +605,11 @@ nodes_data = [
 
 
 
-var restartGame = document.getElementById('restart-game');
-restartGame.addEventListener('click', function(){
-  if (confirm("Are you sure you want to clear the waters?")) {
-    socket.emit('restart-game');  
-  }
-});
-socket.on('restart-game', function(ps){
-  for (var player=0; player<Object.keys(players).length; player++){
-    //var player_info = players[Object.keys(players)[player]];
-    //Iterate over pieces for a given player
-    for (var piece=0; piece<players[Object.keys(players)[player]].coords.length; piece++){
-      id = players[Object.keys(players)[player]].coords[piece].id;
-      d3.select('#' + id).remove();
-    }
-  }
-  d3.select("#treasureOnIsland").remove();
-  resetGamePlayeVars();
-  window.players = ps;
-  console.log("restart");
-  console.log(window.players);
-});
+
 
 
 var startGame = document.getElementById('start-game');
 startGame.addEventListener('click', function(){
-  console.log("Start button clicked...");
-  console.log("start");
-  console.log(players);
   socket.emit('start-game', players);
 });
 
@@ -648,7 +655,6 @@ socket.on('start-game', function(players){
               //legalMoves = getLegalMoves(position, d2, d1);
               legalMoves = global_legal_moves[thisPiece];
               highlighted_legal_moves = global_legal_moves[thisPiece];
-
               for (var sq=0; sq<legalMoves.length; sq++){
                 d3.select(legalMoves[sq])
                   .attr("fill", "#ADD8E6")
@@ -721,6 +727,7 @@ d3.select(this)
 
 });
 
+
 var submit = document.getElementById("submit");
 submit.addEventListener('click', function(){
   //players[userId]
@@ -778,9 +785,7 @@ socket.on('treasureFoundOnIsland', function(id){
   if (treasureOnIsland == true){
    d3.select('#treasureOnIsland').transition().duration(6000)
         .attr("cx", d3.select(id).attr("cx"))
-        .attr("cy", d3.select(id).attr("cy")).on("end", function(){
-
-        });
+        .attr("cy", d3.select(id).attr("cy"));
    d3.select('#treasureOnIsland').remove();
   }
   d3.select(id).style("fill", '#d4af37');

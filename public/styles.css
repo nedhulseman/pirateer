@@ -1,10 +1,23 @@
 #board{
+  margin: 50px;
  display: grid;
  width: 600px;
  float: center;
  display: inline-block;
  text-align: center;
+
  /*transform: rotate(45deg);*/
+}
+
+.game-play{
+  height: 500px;
+}
+.game-start-buttons{
+  height: 100px;
+  float: right;
+}
+td {
+  height: 50px;
 }
 
 .cell {
@@ -19,25 +32,31 @@
   padding: 12px 0;
   width: 140px;
   border-radius: 0 0 2px 2px;
+  margin: 2px;
+}
+#start-button {
+  width: 100%;
+}
+.canvas {
+  flex-wrap: wrap;
+  display: flex;
 }
 
-#submit {
-  width: 200px;
-  justify-content: right;
+#restart {
   float: right;
-  display: inline-block;
 }
 body{
   margin-bottom: 100px;
 }
 #game-setup {
-  width: 200px;
-  justify-content: right;
-  display: inline-block;
+  /*justify-content: right;*/
+  float: right;
 }
 .control-panel{
   display: inline-block;
-  width: 500px;
+  width: 650px;
+  height: 600px;
+  margin: 50px;
 }
 
 
@@ -95,4 +114,29 @@ img {
 #dice-2{
   float: right;
   margin-right: 25%;
+}
+#team-black-color {
+  background-color:black;
+}
+#team-blue-color {
+  background-color:blue;
+}
+#team-white-color {
+  background-color:white;
+}
+#team-green-color {
+  background-color:green;
+}
+table, th, td {
+  padding: 10px;
+  border: 1px solid black
+}
+
+td {
+  width: 50px;
+  margin: 30px;
+}
+.team-color {
+  width: 30px;
+  height: 20px;
 }

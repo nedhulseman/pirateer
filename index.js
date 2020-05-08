@@ -50,11 +50,16 @@ var orderTeams = function (array) {
 };
 
 
-
 //socket Setup
 var io = socket(server);
 
+
 io.on('connection', function(socket){
+  socket.on('disconnect', function(){
+    console.log(socket.id);
+  })
+  clients.push(socket.id);
+  console.log(clients);
   if (player_counter <= 3){
     player[socket.id] = {
       player_num: player_counter,
@@ -71,13 +76,15 @@ io.on('connection', function(socket){
       turn: false,
     };
 
-    io.sockets.emit('player-join', player);
+    io.sockets.emit('player-join', player, socket.id);
   player_counter += 1;
   }
 
   socket.on('start-game', function(players){
+    console.log('Starting game....');
     if (gameInProgress == false){
-      playOrder = orderTeams(Object.keys(player));
+      console.log('Starting game 2....');
+      playOrder = orderTeams(Object.keys(players));
       playersTurn = 0;
       players[playOrder[playersTurn]].turn = true;
       for (var i=0; i<playOrder.length; i++){
@@ -88,10 +95,41 @@ io.on('connection', function(socket){
       io.sockets.emit('start-game', players);
     }
   });
+
+  socket.on('restart-game', function(){
+    console.log("I am restarting...")
+    gameInProgress = false;
+    console.log(clients);
+    if (clients.length > 3) {
+      clients = clients.slice(0, 4);
+    }
+    player = {}
+    for (var player_num=0; player_num<clients.length; player_num++){
+      player[clients[player_num]] = {
+        player_num: player_num,
+        team: teams[player_num],
+        //startingPos: pieces[teams[player_counter]],
+        pieces : [ {id: teams[player_num]+'-0',
+                    pos: startingBlocks[teams[player_num]][0]},
+                   {id: teams[player_num]+'-1',
+                    pos: startingBlocks[teams[player_num]][1]},
+                   {id: teams[player_num]+'-2',
+                    pos: startingBlocks[teams[player_num]][2]} ],
+        coords : [],
+        shipClass: teams[player_num]+'-ship',
+        turn: false,
+      };
+    }
+    console.log(player);
+    io.sockets.emit('restart-game', player);
+
+  });
+
   socket.on('treasureFoundOnIsland', function(id){
     io.sockets.emit('treasureFoundOnIsland', id);
   })
   socket.on('dice-roll', function(die){
+    console.log("Server dice rolled");
     io.sockets.emit('dice-roll', die);
   });
 
