@@ -8,15 +8,40 @@
 
  /*transform: rotate(45deg);*/
 }
-
+.banner {
+  width: 100%;
+  height: 3%;
+  background-color: #7cbdc9;
+  color: #d4af37;
+  flex-wrap: wrap;
+  display: flex;
+}
+.banner h1{
+  margin-left: 50px;
+  vertical-align: middle;
+  display: table-cell;
+  padding-top: 7px;
+  font-family: 'Monotype Corsiva','Apple Chancery','ITC Zapf Chancery','URW Chancery L',cursive;
+  font-size: 64px;
+}
+.banner img {
+  height: 3%;
+  margin-left: 15px;
+}
 .game-play{
-  height: 600px;
+  height: 550px;
 }
 .game-start-buttons{
   height: 100px;
-  float: right;
+  /*float: right;*/
+  flex-wrap: wrap;
+  display: flex;
 }
-
+.lobby-numbers{
+  width: 50%;
+  justify-content: flex-start;
+  float: left;
+}
 
 .cell {
   background-color: #000080;
@@ -54,7 +79,7 @@ body{
   display: inline-block;
   width: 650px;
   height: 600px;
-  margin: 50px;
+  margin: 10px;
 }
 
 

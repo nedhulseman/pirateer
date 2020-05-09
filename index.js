@@ -61,6 +61,7 @@ var io = socket(server);
 io.on('connection', function(socket){
   socket.on('disconnect', function(){
     console.log(socket.id);
+    clients.pop(indexOf(socket.id));
   })
   clients.push(socket.id);
   console.log(clients);
@@ -80,7 +81,7 @@ io.on('connection', function(socket){
       turn: false,
     };
 
-    io.sockets.emit('player-join', player, socket.id);
+    io.sockets.emit('player-join', player, socket.id, clients.length);
   player_counter += 1;
   }
 
