@@ -48,8 +48,15 @@ var nodes;
 var playerOrder;
 var movedPiece;
 var players;
-var currentTurn = document.getElementById('current-turn');
+var currentTurn;
 var currentTurnID;
+var turnImage = '<img src="static/anchor.png" alt="" id="turn-anchor" height=5px width=5px></img>'
+var turnImage = document.createElement('img');
+turnImage.src = "static/anchor.png";
+turnImage.setAttribute("id",  "turn-anchor");
+turnImage.setAttribute("width",  "5px");
+turnImage.setAttribute("height",  "5px");
+
 
 //Get square centers
 var boardMatrix = {};
@@ -76,7 +83,7 @@ function resetGamePlayeVars(){
   window.playerOrder = -1;
   window.movedPiece = false;
   window.players = -1;
-  window.currentTurn = document.getElementById('current-turn');
+  window.currentTurn;
   window.currentTurnID = -1;
 
 
@@ -199,7 +206,29 @@ var svg = d3.select('#board').append('svg')
     height: h
   });
 
+icons = {
+  "black":"black-flag-piece",
+  "blue":"blue-flag-piece",
+  "white":"white-flag-piece",
+  "green":"green-flag-piece"
+};
 
+for (var i=0; i< Object.keys(icons).length; i++){
+  key = Object.keys(icons)[i];
+  var defs = svg.append('svg:defs');
+
+  defs.append("svg:pattern")
+      .attr("id", icons[key])
+      .attr("width", 30)
+      .attr("height", 30)
+      .attr("patternUnits", "userSpaceOnUse")
+      .append("svg:image")
+        .attr("xlink:href", 'static/'+icons[key]+'.png')
+        .attr("width", 30)
+        .attr("height", 30)
+        .attr("x", 0)
+        .attr("y", 0);
+};
 
 
 // calculate number of rows and columns
@@ -412,11 +441,13 @@ for (var i=0; i<land.length; i++){
 anchorSquaresTreasure = ["s-9-10", "s-9-11","s-10-9", "s-11-9", "s-12-10", "s-12-11",
                         "s-10-12", "s-11-12"];
 anchorSquaresLanding  = ["s-1-10", "s-20-11", "s-10-1", "s-11-20"];
-var anchors = svg.selectAll('image')
+console.log(anchorSquaresTreasure.concat(anchorSquaresLanding));
+var anchors = svg.selectAll('.anchor-landing')
   .data(anchorSquaresTreasure.concat(anchorSquaresLanding)).enter()
     .append("svg:image")
       .attr("href", "static/anchor.png")
-      .attr("x", function(d) {return parseInt(d3.select('#'+d).attr('x')) + 5 })
+      .attr("class", "anchor-landing")
+      .attr("x", function(d) {console.log(d); return parseInt(d3.select('#'+d).attr('x')) + 5 ;})
       .attr("y", function(d) {return parseInt(d3.select('#'+d).attr('y')) + 5 })
       .attr("width", 20)
       .attr("height", 20)
@@ -433,17 +464,7 @@ for (var r=1; r<w/square +1; r++){
   }
 }
 
-/*
-//var piece_svg = d3.select("#s-12")
-var piece = svg.append("circle")
-    .attr("class", "ships")
-    .attr("id", "piece-1")
-    .attr("cx", 60)
-    .attr("cy", 60)
-    .attr("r", 15)
-    .attr("fill", "red")
-    .classed('draggable', true);
-*/
+
 var drag = d3.behavior.drag()
   .origin(function(d) { return d; })
   .on("dragstart", dragstarted)
@@ -574,11 +595,10 @@ nodes_data = [
 
 
 
-
 var restartGame = document.getElementById('restart-game');
 restartGame.addEventListener('click', function(){
   if (confirm("Are you sure you want to clear the waters?")) {
-    socket.emit('restart-game');  
+    socket.emit('restart-game');
   }
 });
 socket.on('restart-game', function(ps){
@@ -625,7 +645,8 @@ socket.on('start-game', function(players){
           .attr("cx", parseInt(d3.select('#'+players[Object.keys(players)[player]].pieces[piece].pos).attr('x')) + square/2)
           .attr("cy", parseInt(d3.select('#'+players[Object.keys(players)[player]].pieces[piece].pos).attr('y')) + square/2)
           .attr("r", 15)
-          .attr("fill", players[Object.keys(players)[player]].team)
+            .attr("fill", "url(#" + icons[players[Object.keys(players)[player]].team] +")" )
+          /*.attr("fill", "static/black-flag.png")*/
           .classed('draggable', true)
           .on("mouseover", function(){
             if  (window.players[userId].turn == true && d3.select(this).attr("id").split("-")[0] == window.players[userId].team){
@@ -680,6 +701,7 @@ socket.on('start-game', function(players){
               }
             };
           });
+
     }
   }
 
@@ -714,8 +736,12 @@ d3.select(this)
   window.players = players;
   for (var p=0; p<Object.keys(players).length; p++){
     if (players[Object.keys(players)[p]].turn == true){
-        currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
+        d3.select("#turn-anchor").remove();
         currentTurnID = Object.keys(players)[p];
+        currentTurnColor = players[currentTurnID].team;
+        currentTurn = document.getElementById('team-' +currentTurnColor).cells[0];
+        currentTurn.appendChild(turnImage);
+
     }
   }
 
@@ -791,8 +817,11 @@ socket.on('move', function(playerMoves){
   players = playerMoves.players;
   for (var p=0; p<Object.keys(players).length; p++){
     if (players[Object.keys(players)[p]].turn == true){
-        currentTurn.innerHTML = "Current Turn: " + players[Object.keys(players)[p]].team;
-        currentTurnID = Object.keys(players)[p];
+      d3.select("#turn-anchor").remove();
+      currentTurnID = Object.keys(players)[p];
+      currentTurnColor = players[currentTurnID].team;
+      currentTurn = document.getElementById('team-' +currentTurnColor).cells[0];
+      currentTurn.appendChild(turnImage);
     }
   }
   for (var i=0; i<playerMoves.players[playerMoves.user].coords.length; i++){

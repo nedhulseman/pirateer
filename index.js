@@ -49,6 +49,10 @@ var orderTeams = function (array) {
 
 };
 
+function setPlayers(clients){
+  //set this
+};
+
 
 //socket Setup
 var io = socket(server);
