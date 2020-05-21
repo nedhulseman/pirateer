@@ -49,8 +49,35 @@ var orderTeams = function (array) {
 
 };
 
-function setPlayers(clients){
-  //set this
+function setPlayers(){
+  if (clients.length > 3) {
+    clients = clients.slice(0, 4);
+  }
+  player = {}
+  for (var player_num=0; player_num<clients.length; player_num++){
+    player[clients[player_num]] = {
+      player_num: player_num,
+      team: teams[player_num],
+      //startingPos: pieces[teams[player_counter]],
+      pieces : [ {id: teams[player_num]+'-0',
+                  pos: startingBlocks[teams[player_num]][0]},
+                 {id: teams[player_num]+'-1',
+                  pos: startingBlocks[teams[player_num]][1]},
+                 {id: teams[player_num]+'-2',
+                  pos: startingBlocks[teams[player_num]][2]} ],
+      coords : [],
+      shipClass: teams[player_num]+'-ship',
+      turn: false,
+    };
+  }
+  playOrder = orderTeams(Object.keys(player));
+  playersTurn = 0;
+  player[playOrder[playersTurn]].turn = true;
+  for (var i=0; i<playOrder.length; i++){
+    player[playOrder[i]].playOrder = i;
+  }
+  console.log("set player: ");
+  console.log(player);
 };
 
 
@@ -61,72 +88,25 @@ var io = socket(server);
 io.on('connection', function(socket){
   socket.on('disconnect', function(){
     console.log(socket.id);
-    clients.pop(indexOf(socket.id));
+    clients.pop(clients.indexOf(socket.id));
+    io.sockets.emit('player-leave', clients.length);
   })
   clients.push(socket.id);
-  console.log(clients);
-  if (player_counter <= 3){
-    player[socket.id] = {
-      player_num: player_counter,
-      team: teams[player_counter],
-      //startingPos: pieces[teams[player_counter]],
-      pieces : [ {id: teams[player_counter]+'-0',
-                  pos: startingBlocks[teams[player_counter]][0]},
-                 {id: teams[player_counter]+'-1',
-                  pos: startingBlocks[teams[player_counter]][1]},
-                 {id: teams[player_counter]+'-2',
-                  pos: startingBlocks[teams[player_counter]][2]} ],
-      coords : [],
-      shipClass: teams[player_counter]+'-ship',
-      turn: false,
-    };
-
-    io.sockets.emit('player-join', player, socket.id, clients.length);
+  io.sockets.emit('player-join', clients.length);
   player_counter += 1;
-  }
 
-  socket.on('start-game', function(players){
-    console.log('Starting game....');
+
+  socket.on('start-game', function(){
     if (gameInProgress == false){
-      console.log('Starting game 2....');
-      playOrder = orderTeams(Object.keys(players));
-      playersTurn = 0;
-      players[playOrder[playersTurn]].turn = true;
-      for (var i=0; i<playOrder.length; i++){
-        players[playOrder[i]].playOrder = i;
-      }
       gameInProgress = true;
-      player = players;
-      io.sockets.emit('start-game', players);
+      setPlayers();
+      io.sockets.emit('start-game', player);
     }
   });
 
   socket.on('restart-game', function(){
-    console.log("I am restarting...")
     gameInProgress = false;
-    console.log(clients);
-    if (clients.length > 3) {
-      clients = clients.slice(0, 4);
-    }
-    player = {}
-    for (var player_num=0; player_num<clients.length; player_num++){
-      player[clients[player_num]] = {
-        player_num: player_num,
-        team: teams[player_num],
-        //startingPos: pieces[teams[player_counter]],
-        pieces : [ {id: teams[player_num]+'-0',
-                    pos: startingBlocks[teams[player_num]][0]},
-                   {id: teams[player_num]+'-1',
-                    pos: startingBlocks[teams[player_num]][1]},
-                   {id: teams[player_num]+'-2',
-                    pos: startingBlocks[teams[player_num]][2]} ],
-        coords : [],
-        shipClass: teams[player_num]+'-ship',
-        turn: false,
-      };
-    }
-    console.log(player);
-    io.sockets.emit('restart-game', player);
+    io.sockets.emit('restart-game');
 
   });
 
@@ -149,11 +129,7 @@ io.on('connection', function(socket){
     else {
       playersTurn += 1;
     }
-    //player[playerMoves.user].coords = playerMoves.players[playerMoves.user].coord;
     playerMoves.players[playOrder[playersTurn]].turn = true;
-    //playerMoves.players = _.cloneDeep(player);
-    //console.log('Server player');
-    //console.log(player);
     io.sockets.emit('move',playerMoves);
   });
 });

@@ -3,5 +3,6 @@ To fix:
 X - 1. additive or subtractive moves in same dir not working
 2. if any legal moved - must move
 X - 3. Fix capturing
-4. If someone leaves before game starts remove
+X If someone leaves before game starts remove
 5. Beginning 6 and 4 moves 2?
+6. Cant capture teams set before

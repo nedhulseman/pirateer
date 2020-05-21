@@ -5,23 +5,19 @@ var socket = io.connect('http://localhost:4000');
 socket.on('connect', function() {
   userId = socket.id;
   document.getElementById('user-identifier').innerHTML = "Welcome user: " + userId;
-  /*
-  socket.emit('player-join', {
-    x : d3.select("#piece-1").attr("cx"),
-    y : d3.select("#piece-1").attr("cy")
-  });
-  socket.on('player-join', function(player){
-    document.getElementById('team').innerHTML = "Team: " + player[socket.id].team;
-  });
-  */
 });
-var players;
-socket.on('player-join', function(ps, playerId){
-  players = ps;
-  teamHTML = ""
-  var teamLists = document.getElementById('team-assignments');
+function updateLobbyCount(num_clients){
+  var lobbytracker = document.getElementById('lobby-tracker');
+  var default_message = (num_clients==1 ? " pirate" : ' pirates') + " in the harbour";
+  var message = num_clients + default_message;
+  lobbytracker.innerHTML = message;
+};
 
-
+socket.on('player-join', function(num_clients){
+  updateLobbyCount(num_clients);
+});
+socket.on('player-leave', function(num_clients){
+  updateLobbyCount(num_clients);
 });
 
 
@@ -75,6 +71,11 @@ var totalMoved = 0;
 function treasureFound(id){
   socket.emit('treasureFoundOnIsland', id);
 }
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
 function resetGamePlayeVars(){
   window.gameStarted = false;
   window.nodes_data = [];
@@ -256,7 +257,7 @@ _.times(squaresColumn, function(n) {
         return i * square;
       },
       y: n * square,
-      fill: '#000080',
+      fill: '#80b6d2',
       stroke: '#fff'
     });
 
@@ -495,7 +496,7 @@ function dropped(d) {
     dice1Img.src = 'static/roll-dice.png';
     dice2Img.src = 'static/roll-dice.png';
   }
-
+  d3.select('#'+d.id).moveToFront();
 
   minD = Math.min(dice1, dice2);
   maxD = Math.max(dice1, dice2);
@@ -601,7 +602,7 @@ restartGame.addEventListener('click', function(){
     socket.emit('restart-game');
   }
 });
-socket.on('restart-game', function(ps){
+socket.on('restart-game', function(){
   for (var player=0; player<Object.keys(players).length; player++){
     //var player_info = players[Object.keys(players)[player]];
     //Iterate over pieces for a given player
@@ -612,29 +613,22 @@ socket.on('restart-game', function(ps){
   }
   d3.select("#treasureOnIsland").remove();
   resetGamePlayeVars();
-  window.players = ps;
-  console.log("restart");
-  console.log(window.players);
+  console.log(players);
 });
 
 
 var startGame = document.getElementById('start-game');
 startGame.addEventListener('click', function(){
-  console.log("Start button clicked...");
-  console.log("start");
-  console.log(players);
-  socket.emit('start-game', players);
+
+  socket.emit('start-game');
 });
 
-socket.on('start-game', function(players){
+socket.on('start-game', function(ps){
   gameStarted = true;
-  //Iterate over players
-  /*playerOrder = serverPlayers[1];
-  orderedList = document.getElementById('team-order');
-  for (var i=0; i<Object.keys(players).length.length; i++){
-    orderedList.innerHTML += "<li>" + playerOrder[i]+"</li>";
-  }
-  */
+  window.players = ps;
+  console.log(players);
+
+
   for (var player=0; player<Object.keys(players).length; player++){
     //var player_info = players[Object.keys(players)[player]];
     //Iterate over pieces for a given player
@@ -672,7 +666,7 @@ socket.on('start-game', function(players){
 
               for (var sq=0; sq<legalMoves.length; sq++){
                 d3.select(legalMoves[sq])
-                  .attr("fill", "#ADD8E6")
+                  .attr("fill", "#b9daeb")
               }
             };
           })
@@ -697,7 +691,7 @@ socket.on('start-game', function(players){
               //legalMoves = global_legal_moves[thisPiece];
               for (var sq=0; sq<highlighted_legal_moves.length; sq++){
                 d3.select(highlighted_legal_moves[sq])
-                  .attr("fill", "#000080")
+                  .attr("fill", "#80b6d2")
               }
             };
           });
@@ -804,9 +798,7 @@ socket.on('treasureFoundOnIsland', function(id){
   if (treasureOnIsland == true){
    d3.select('#treasureOnIsland').transition().duration(6000)
         .attr("cx", d3.select(id).attr("cx"))
-        .attr("cy", d3.select(id).attr("cy")).on("end", function(){
-
-        });
+        .attr("cy", d3.select(id).attr("cy"));
    d3.select('#treasureOnIsland').remove();
   }
   d3.select(id).style("fill", '#d4af37');
